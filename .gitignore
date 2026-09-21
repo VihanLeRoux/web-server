@@ -1,0 +1,18 @@
+# Build directories
+bin/
+obj/
+
+# Object files
+*.o
+
+# Executable files
+*.out
+*.exe
+
+# Debug files
+*.dSYM/
+*.su
+*.gch
+
+# Dependencies
+*.d
