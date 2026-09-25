@@ -8,7 +8,7 @@ BIN_DIR = bin
 
 SOURCES = $(wildcard $(SRC_DIR)/*.c)
 OBJECTS = $(patsubst $(SRC_DIR)/%.c,$(OBJ_DIR)/%.o,$(SOURCES))
-TARGET = $(BIN_DIR)/poker
+TARGET = $(BIN_DIR)/web-server
 
 all: $(TARGET)
 
@@ -26,6 +26,8 @@ clean:
 
 run: $(TARGET)
 	./$(TARGET)
+
+
 
 rebuild: clean all
 

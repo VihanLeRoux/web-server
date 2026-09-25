@@ -16,3 +16,6 @@ obj/
 
 # Dependencies
 *.d
+
+# Other
+beej/

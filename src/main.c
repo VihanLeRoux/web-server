@@ -15,6 +15,7 @@
 #include <sys/wait.h>
 #include <signal.h>
 
+#include "../inc/http-handler.h"
 
 #define PORT "8000"
 #define BACKLOG 10
@@ -168,7 +169,13 @@ void server(int sockfd){
 
       recv_msg[recv_len] = '\0';
 
-      printf("Received msg(%d): %s\n", recv_len, recv_msg);
+      Request request;
+
+      parse_http_request(recv_msg, &request);
+
+      //printf("Received msg(%d): %s\n", recv_len, recv_msg);
+
+
 
       //exit(1);
     }

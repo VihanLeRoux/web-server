@@ -1,14 +1,14 @@
 #ifndef HTTP_HANDLER_H
 #define HTTP_HANDLER_H
 
-enum Request_Method {
+enum Method {
     GET,
     POST,
     PUT,
     DELETE
 };
 
-enum Response_Code {
+enum Code {
     OK = 200,
     BAD_REQUEST = 400,
     NOT_FOUND = 404,
@@ -16,17 +16,28 @@ enum Response_Code {
 };
 
 typedef struct {
-    enum Request_Method method;
+    char* name;
+    char* value;
+} Header;
+
+typedef struct {
+    enum Method method;
     char* path;
     float version;
-} Request_Header;
-
-
+    Header headers[];
+} Request;
 
 typedef struct {
     float version;
-    enum Response_Code code;
+    enum Code code;
     char* message;
-} Response_Header;
+} Response;
+
+typedef struct {
+    char* p_line;
+    size_t len;
+} Line;
+
+void parse_http_request(char*, Request*);
 
 #endif
