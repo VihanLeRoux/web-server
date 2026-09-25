@@ -36,11 +36,12 @@ typedef struct {
     struct Header header;
 } Response;
 
-typedef struct {
+typedef struct Line {
     char* p_line;
     size_t len;
+    struct Line *next;
 } Line;
 
-void parse_http_request(char*, Request*);
+void parse_http_request(char*, int, Request*);
 
 #endif
