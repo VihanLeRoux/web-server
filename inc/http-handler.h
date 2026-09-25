@@ -15,22 +15,25 @@ enum Code {
     INT_SERVER_ERROR = 500
 };
 
-typedef struct {
+struct Header {
     char* name;
     char* value;
-} Header;
+    struct Header *next;
+};
 
 typedef struct {
     enum Method method;
     char* path;
     float version;
-    Header headers[];
+    struct Header header;
 } Request;
 
 typedef struct {
     float version;
     enum Code code;
     char* message;
+    char* body;
+    struct Header header;
 } Response;
 
 typedef struct {

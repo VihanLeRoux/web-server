@@ -5,41 +5,30 @@
 #include "../inc/http-handler.h"
 
 
+size_t get_line_count(char* message, size_t len){
+    size_t count = 0;
 
-size_t get_line_count(char* message, int* count){
-    size_t len = 0;
-    *count = 0;
-
-    char current = message[len];
-
-    while (current != '\0') {
-        
-        if (current == '\n'){
-            (*count)++;
+    for (size_t i = 0; i < len; i++){
+        if (message[i] == '\n'){
+            count++;
         }
-
-        len++;
-        current = message[len];
     }
 
-    if (message[len-1] == '\n') (*count)--;
+    if (message[len-1] == '\n') count--;
 
-    return len;
+    return count;
 }
 
 
 void get_lines(char* message, Line *lines[], size_t len){
     size_t j = 0;
-    char* current;
 
     Line *line = (Line *)malloc(sizeof(Line));
 
     for(size_t i = 0; i < len; i++){
-        current = message[i];
-
-        if (current == '\0') break;
-        else if (current == '\r') continue;
-        else if (current == '\n') {
+        if (message[i] == '\0') break;
+        else if (message[i] == '\r') continue;
+        else if (message[i] == '\n') {
             lines[j] = line;
             line = (Line *)malloc(sizeof(Line));
             j++;
@@ -57,27 +46,56 @@ void get_lines(char* message, Line *lines[], size_t len){
     //free(line);
 }
 
+void free_lines(Line *line){
+
+}
+
+char* read_line(Line *line){
+    char* ret = malloc((line->len + 1) * sizeof(char));
+
+    for(size_t i = 0; i < line->len; i++){
+        char next = *(line->p_line + (i * sizeof(char)));
+
+        ret[i] = next;
+    }
+
+    ret[line->len] = '\0';
+
+    return ret;
+}
+
+
+
 void parse_http_request(char* req, Request* request){
 
     printf("Parsing...\n");
 
-    int count = 0;
-    
-    size_t len = get_line_count(req, &count);
+    size_t len = strlen(req);
+    size_t count = get_line_count(req, len);
+
+    if (count <= 0) return;
 
     Line *lines[count];
 
     get_lines(req, lines, len);
 
-    for (int i = 0; i < count; i++){
+    // for(Line *p = lines[0]; p != NULL; p = p->next){
+    //     char* l = read_line(p);
+
+    //     printf("%s\n", l);
+
+    //     free(l);
+    // }
+    
+    for (size_t i = 0; i < count; i++){
         Line *line = lines[i];
 
-        for(int j = 0; j < line->len; j++){
-            char next = *(line->p_line + (j * sizeof(char)));
+        char* l = read_line(line);
 
-            printf("%c", next);
-        }
+        printf("%s\n", l);
 
-        printf("\n");
+        free(l);
     }
+
+    //free_lines(lines);
 }
