@@ -14,7 +14,7 @@ typedef struct Line {
 
 Line* get_lines(char* message, size_t len){
 
-    Line *line = (Line *)malloc(sizeof(Line));
+    Line *line = (Line *)calloc(1, sizeof(Line));
     Line *head = line;
 
     for(size_t i = 0; i < len; i++){
@@ -22,7 +22,7 @@ Line* get_lines(char* message, size_t len){
         else if (message[i] == '\r') continue;
         else if (message[i] == '\n') {
             if (i != len - 2){
-                Line *new_line = (Line *)malloc(sizeof(Line));
+                Line *new_line = (Line *)calloc(1, sizeof(Line));
 
                 line->next = new_line;
                 line = new_line;
@@ -45,9 +45,10 @@ Line* get_lines(char* message, size_t len){
 }
 
 void free_lines(Line *line){
-    for(Line *p = line; p != NULL; p = p->next){
-        Line *temp = p;
-        free(temp);
+    while (line != NULL) {
+        Line *next = line->next;
+        free(line);
+        line = next;
     }
 }
 
@@ -57,9 +58,7 @@ char* read_line(Line *line){
     char* ret = malloc((line->len + 1) * sizeof(char));
 
     for(size_t i = 0; i < line->len; i++){
-        char next = *(line->p_line + (i * sizeof(char)));
-
-        ret[i] = next;
+        ret[i] = line->p_line[i];
     }
 
     ret[line->len] = '\0';
@@ -68,14 +67,14 @@ char* read_line(Line *line){
 }
 
 Line* get_words(Line *line){
-    Line *words = (Line *)malloc(sizeof(Line));
+    Line *words = (Line *)calloc(1, sizeof(Line));
     Line *current = words;
 
     for (size_t i = 0; i < line->len; i++){
         char* letter = (line->p_line + (i * sizeof(char)));
 
         if (*letter == ' ') {
-            Line *new_word = (Line *)malloc(sizeof(Line));
+            Line *new_word = (Line *)calloc(1, sizeof(Line));
             current->next = new_word;
             current = new_word;
         } 
@@ -115,7 +114,7 @@ void parse_method(Line *l_method, Request *request) {
     request->method = e_method;
     request->state = PATH;
 
-    //free(str);
+    free(str);
 }
 
 void parse_path(Line *l_path, Request *request){
@@ -130,7 +129,7 @@ void parse_path(Line *l_path, Request *request){
     strcpy(request->path, s_path);
     request->state = VERSION;
 
-    //free(s_path);
+    free(s_path);
 }
 
 void parse_version(Line* l_version, Request *request){
@@ -143,7 +142,7 @@ void parse_version(Line* l_version, Request *request){
 
     strcpy(request->version, s_version);
 
-    //free(s_version);
+    free(s_version);
 }
 
 

@@ -1,0 +1,36 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Debug web-server",
+      "type": "cppdbg",
+      "request": "launch",
+      "program": "${workspaceFolder}/bin/web-server",
+      "args": [],
+      "stopAtEntry": false,
+      "cwd": "${workspaceFolder}",
+      "environment": [],
+      "externalConsole": false,
+      "MIMode": "gdb",
+      "miDebuggerPath": "/usr/bin/gdb",
+      "setupCommands": [
+        {
+          "description": "Keep the server process under the debugger",
+          "text": "-gdb-set follow-fork-mode parent",
+          "ignoreFailures": false
+        },
+        {
+          "description": "Keep forked workers under the debugger",
+          "text": "-gdb-set detach-on-fork off",
+          "ignoreFailures": false
+        },
+        {
+          "description": "Run all forked server processes",
+          "text": "-gdb-set schedule-multiple on",
+          "ignoreFailures": false
+        }
+      ],
+      "preLaunchTask": "build"
+    }
+  ]
+}
