@@ -3,6 +3,8 @@
 
 #define MAX_PATH_LENGTH 2048
 #define MAX_VERSION_LENGTH 512
+#define MAX_HEADER_KEY_LENGTH 200
+#define MAX_HEADER_VALUE_LENGTH 500
 
 enum Method {
     GET = 1,
@@ -26,8 +28,8 @@ enum ParseState {
 };
 
 struct Header {
-    char* name;
-    char* value;
+    char key[MAX_HEADER_KEY_LENGTH];
+    char value[MAX_HEADER_VALUE_LENGTH];
     struct Header *next;
 };
 
@@ -36,7 +38,7 @@ typedef struct {
     enum Method method;
     char path[MAX_PATH_LENGTH];
     char version[MAX_VERSION_LENGTH];
-    struct Header header;
+    struct Header *header;
 } Request;
 
 typedef struct {
@@ -47,6 +49,6 @@ typedef struct {
     struct Header header;
 } Response;
 
-void parse_http_request(char*, int, Request*);
+void parse_http_request(char*, int);
 
 #endif

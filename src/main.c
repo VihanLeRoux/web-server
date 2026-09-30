@@ -169,9 +169,7 @@ void server(int sockfd){
       
       recv_msg[recv_len] = '\0';
 
-      Request request;
-
-      parse_http_request(recv_msg, recv_len, &request);
+      parse_http_request(recv_msg, recv_len);
 
       //printf("Received msg(%d): %s\n", recv_len, recv_msg);
 

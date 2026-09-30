@@ -88,8 +88,33 @@ Line* get_words(Line *line){
     return words;
 }
 
+Line* split_line(Line *line, char splitter){
+    Line *split = (Line *)calloc(1, sizeof(Line));
+    Line *current = split;
 
-#include <string.h>
+    int splat = 0;
+    for(size_t i = 0; i < line->len; i++){
+        char letter = line->p_line[i];
+        if (letter == splitter && splat == 0){
+            Line *new_word = (Line *)calloc(1, sizeof(Line));
+            current->next = new_word;
+            current = new_word;
+
+            splat = 1;
+        }
+        else if (current->p_line == NULL){
+            if (letter == ' ') continue;
+
+            current->p_line = &(line->p_line[i]);
+            current->len++;
+        }
+        else{
+            current->len++;
+        }
+    }
+
+    return split;
+}
 
 
 void parse_method(Line *l_method, Request *request) {
@@ -151,7 +176,6 @@ void parse_message(Line *message, Request *request){
     Line *words = get_words(message);
     Line *current = words;
 
-
     request->state = METHOD;
 
     while (current != NULL){
@@ -172,14 +196,45 @@ void parse_message(Line *message, Request *request){
         
         current = current->next;
     }
-    
-    printf("\n%d %s %s\n", request->method, request->path, request->version);
 
     free_lines(words);
 }
 
-void parse_headers(){
+void parse_headers(Line *line, Request *request){
+    struct Header *header = calloc(1, sizeof(struct Header));
+    struct Header *current = header;
 
+    while (line != NULL && line->len > 0){
+        Line *split = split_line(line, ':');
+
+        if (split == NULL) {
+            char* err = read_line(line);
+            fprintf(stderr, "Unable to split \"%s\"\n", err);
+            free(err);
+
+            return;
+        }
+
+        char* key = read_line(split);
+        char* value = split->next == NULL ? NULL : read_line(split->next);
+
+        strcpy(current->key, key);
+        strcpy(current->value, value);
+
+
+        free(key);
+        if (value != NULL) free(value);
+
+        line = line->next;
+
+        if (line->len > 0){
+            struct Header *new_header = calloc(1, sizeof(struct Header));
+            current->next = new_header;
+            current = new_header;
+        }
+    }
+
+    request->header = header;
 }
 
 void parse_body(){
@@ -187,18 +242,13 @@ void parse_body(){
 }
 
 
-void parse_http_request(char* message, int len, Request* request){
+void parse_http_request(char* message, int len){
     Line *line = get_lines(message, len);
 
+    Request *request = calloc(1, sizeof(Request));
+
     parse_message(line, request);
-
-    // for(Line *p = line; p != NULL; p = p->next){
-    //     char* l = read_line(p);
-
-    //     printf("(%ld) %s\n", p->len, l);
-
-    //     free(l);
-    // }
+    parse_headers(line->next, request);
 
     free_lines(line);
 }
