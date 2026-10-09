@@ -21,7 +21,7 @@ The first step has been accomplished to build a basic TCP server based on the po
 
 ## HTTP
 
-As a starting point the [RFC 9110](https://www.rfc-editor.org/rfc/rfc9110.html) specification will be used as a referrence to what is expected for the implementation of HTTP/1.1. Most of the information will be derived from this document.
+As a starting point the [RFC 9112](https://www.rfc-editor.org/info/rfc9112/) specification will be used as a referrence to what is expected for the implementation of HTTP/1.1. Most of the information will be derived from this document.
 
 ### What is HTTP
 
@@ -30,4 +30,4 @@ HTTP is a protocol designed to interact between a client and a server. This inte
 Each request is individually defined by a method which determines how the request gets parsed and routed. These requests also determine how the server is affected.
 
  with resources to provide a representation of the stateless actions requested by the client. 
-The next step to this project is to implement HTTP/1.1 specification in order to handle basic request/response from a website. As an initial guide, the [RFC 9110](https://www.rfc-editor.org/rfc/rfc9110.html) will be followed to learn more about HTTP.
+The next step to this project is to implement HTTP/1.1 specification in order to handle basic request/response from a website. As an initial guide, the [RFC 9112](https://www.rfc-editor.org/info/rfc9112/) will be followed to learn more about HTTP.

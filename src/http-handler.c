@@ -5,119 +5,11 @@
 #include <errno.h>
 
 #include "http-handler.h"
-
-typedef struct Line {
-    char* p_line;
-    size_t len;
-    struct Line *next;
-} Line;
-
-Line* get_lines(char* message, size_t len){
-
-    Line *line = (Line *)calloc(1, sizeof(Line));
-    Line *head = line;
-
-    for(size_t i = 0; i < len; i++){
-        if (message[i] == '\0') break;
-        else if (message[i] == '\r') continue;
-        else if (message[i] == '\n') {
-            if (i != len - 2){
-                Line *new_line = (Line *)calloc(1, sizeof(Line));
-
-                line->next = new_line;
-                line = new_line;
-            }
-        }
-        else {
-            if (line->len == 0){
-                line->p_line = &message[i];
-                line->len = 0;
-                line->next = NULL;
-            }
-
-            line->len++;
-        }
-    }
-
-    line->next = NULL;
-
-    return head;
-}
-
-void free_lines(Line *line){
-    while (line != NULL) {
-        Line *next = line->next;
-        free(line);
-        line = next;
-    }
-}
+#include "string-builder/header.h"
 
 
-char* read_line(Line *line){
-    
-    char* ret = malloc((line->len + 1) * sizeof(char));
 
-    for(size_t i = 0; i < line->len; i++){
-        ret[i] = line->p_line[i];
-    }
-
-    ret[line->len] = '\0';
-
-    return ret;
-}
-
-Line* get_words(Line *line){
-    Line *words = (Line *)calloc(1, sizeof(Line));
-    Line *current = words;
-
-    for (size_t i = 0; i < line->len; i++){
-        char* letter = (line->p_line + (i * sizeof(char)));
-
-        if (*letter == ' ') {
-            Line *new_word = (Line *)calloc(1, sizeof(Line));
-            current->next = new_word;
-            current = new_word;
-        } 
-        else {
-            if (current->p_line == NULL)
-                current->p_line = letter;
-            current->len++;
-        }
-    }
-    
-    return words;
-}
-
-Line* split_line(Line *line, char splitter){
-    Line *split = (Line *)calloc(1, sizeof(Line));
-    Line *current = split;
-
-    int splat = 0;
-    for(size_t i = 0; i < line->len; i++){
-        char letter = line->p_line[i];
-        if (letter == splitter && splat == 0){
-            Line *new_word = (Line *)calloc(1, sizeof(Line));
-            current->next = new_word;
-            current = new_word;
-
-            splat = 1;
-        }
-        else if (current->p_line == NULL){
-            if (letter == ' ') continue;
-
-            current->p_line = &(line->p_line[i]);
-            current->len++;
-        }
-        else{
-            current->len++;
-        }
-    }
-
-    return split;
-}
-
-
-void parse_method(Line *l_method, Request *request) {
+void parse_method(String *l_method, Request *request) {
     char* str = read_line(l_method);
 
     enum Method e_method = -1;
@@ -142,7 +34,7 @@ void parse_method(Line *l_method, Request *request) {
     free(str);
 }
 
-void parse_path(Line *l_path, Request *request){
+void parse_path(String *l_path, Request *request){
     
     if (l_path->len > MAX_PATH_LENGTH){
         fprintf(stderr, "Request too long");
@@ -157,7 +49,7 @@ void parse_path(Line *l_path, Request *request){
     free(s_path);
 }
 
-void parse_version(Line* l_version, Request *request){
+void parse_version(String* l_version, Request *request){
     if (l_version->len > MAX_VERSION_LENGTH){
         fprintf(stderr, "Request too long");
         return;
@@ -172,9 +64,9 @@ void parse_version(Line* l_version, Request *request){
 
 
 
-void parse_message(Line *message, Request *request){
-    Line *words = get_words(message);
-    Line *current = words;
+void parse_message(String *message, Request *request){
+    String *words = get_words(message);
+    String *current = words;
 
     request->state = METHOD;
 
@@ -200,12 +92,12 @@ void parse_message(Line *message, Request *request){
     free_lines(words);
 }
 
-void parse_headers(Line *line, Request *request){
+void parse_headers(String *line, Request *request){
     struct Header *header = calloc(1, sizeof(struct Header));
     struct Header *current = header;
 
     while (line != NULL && line->len > 0){
-        Line *split = split_line(line, ':');
+        String *split = split_line(line, ':');
 
         if (split == NULL) {
             char* err = read_line(line);
@@ -243,7 +135,7 @@ void parse_body(){
 
 
 void parse_http_request(char* message, int len){
-    Line *line = get_lines(message, len);
+    String *line = get_lines(message, len);
 
     Request *request = calloc(1, sizeof(Request));
 
