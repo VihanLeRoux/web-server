@@ -1,9 +1,8 @@
-#include <stdio.h>
-#include <stdint.h>
+#include "header.h"
 
-//https://en.wikipedia.org/wiki/MurmurHash
+//As seen in https://en.wikipedia.org/wiki/MurmurHash
 
-static inline uint32_t murmur_32_scramble(uint32_t k) {
+static inline uint32_t scramble(uint32_t k) {
     k *= 0xcc9e2d51;
     k = (k << 15) | (k >> 17);
     k *= 0x1b873593;
@@ -11,7 +10,7 @@ static inline uint32_t murmur_32_scramble(uint32_t k) {
 }
 
 
-uint32_t murmur3_32(const uint8_t* key, size_t len, uint32_t seed)
+uint32_t hash(const uint8_t* key, size_t len, uint32_t seed)
 {
 	uint32_t h = seed;
     uint32_t k;
@@ -21,7 +20,7 @@ uint32_t murmur3_32(const uint8_t* key, size_t len, uint32_t seed)
         // A swap here has no effects on hash properties though.
         memcpy(&k, key, sizeof(uint32_t));
         key += sizeof(uint32_t);
-        h ^= murmur_32_scramble(k);
+        h ^= scramble(k);
         h = (h << 13) | (h >> 19);
         h = h * 5 + 0xe6546b64;
     }
@@ -34,7 +33,7 @@ uint32_t murmur3_32(const uint8_t* key, size_t len, uint32_t seed)
     // A swap is *not* necessary here because the preceding loop already
     // places the low bytes in the low places according to whatever endianness
     // we use. Swaps only apply when the memory is copied in a chunk.
-    h ^= murmur_32_scramble(k);
+    h ^= scramble(k);
     /* Finalize. */
 	h ^= len;
 	h ^= h >> 16;
