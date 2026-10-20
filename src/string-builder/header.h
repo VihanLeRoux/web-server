@@ -13,6 +13,7 @@ typedef struct String {
 String* split_lines(char*, size_t);
 String* split_words(String*);
 String* split_first_char(String*, char);
+char* read_string(String*);
 
 void free_strings(String*);
 

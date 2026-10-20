@@ -8,7 +8,7 @@ OBJ_DIR = obj
 BIN_DIR = bin
 
 # Main application sources (exclude main.c from tests)
-APP_SOURCES = $(filter-out $(SRC_DIR)/main.c, $(wildcard $(SRC_DIR)/*.c))
+APP_SOURCES = $(filter-out $(SRC_DIR)/main.c,$(shell find $(SRC_DIR) -type f -name '*.c'))
 APP_OBJECTS = $(patsubst $(SRC_DIR)/%.c,$(OBJ_DIR)/%.o,$(APP_SOURCES))
 APP_TARGET = $(BIN_DIR)/web-server
 
@@ -27,10 +27,12 @@ tests: $(TEST_TARGET)
 $(TEST_TARGET): $(APP_OBJECTS) $(TEST_OBJECTS) | $(BIN_DIR)
 	$(CC) $^ -o $@ $(LDFLAGS)
 
-$(OBJ_DIR)/%.o: $(SRC_DIR)/%.c | $(OBJ_DIR)
+$(OBJ_DIR)/%.o: $(SRC_DIR)/%.c | $(OBJ_DIR)	
+	@mkdir -p $(dir $@)
 	$(CC) $(CFLAGS) -c $< -o $@
 
 $(OBJ_DIR)/test_%.o: $(TEST_DIR)/%.c | $(OBJ_DIR)
+	@mkdir -p $(dir $@)
 	$(CC) $(CFLAGS) -c $< -o $@
 
 $(BIN_DIR) $(OBJ_DIR):

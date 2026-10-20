@@ -12,13 +12,11 @@ void test_parse_http_request(){
 
     int len = strlen(message);
 
-    Request request;
+    Request* request = parse_http_request(message, len);
 
-    parse_http_request(message, len, &request);
-
-    assert(request.method == POST);
-    assert(strcmp(request.path, "/api/users") == 0);
-    assert(strcmp(request.version, "HTTP/1.1") == 0);
+    assert(request->method == POST);
+    assert(strcmp(request->path, "/api/users") == 0);
+    assert(strcmp(request->version, "HTTP/1.1") == 0);
 
     printf("✓ All assertions passed\n");
 }

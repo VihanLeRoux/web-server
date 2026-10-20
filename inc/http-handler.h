@@ -52,6 +52,6 @@ typedef struct {
     struct Header header;
 } Response;
 
-void parse_http_request(char*, int);
+Request* parse_http_request(char*, int);
 
 #endif

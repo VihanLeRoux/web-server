@@ -6,11 +6,12 @@
 
 #include "http-handler.h"
 #include "string-builder/header.h"
+#include "hash-table/header.h"
 
 
 
 void parse_method(String *l_method, Request *request) {
-    char* str = read_line(l_method);
+    char* str = read_string(l_method);
 
     enum Method e_method = -1;
 
@@ -24,9 +25,9 @@ void parse_method(String *l_method, Request *request) {
         e_method = DELETE;
     }
 
-    if (e_method == -1){
-        fprintf(stderr, "No valid method");
-    }
+    // if (e_method == -1){
+    //     fprintf(stderr, "No valid method");
+    // }
 
     request->method = e_method;
     request->state = PATH;
@@ -41,7 +42,7 @@ void parse_path(String *l_path, Request *request){
         return;
     }
     
-    char* s_path = read_line(l_path);
+    char* s_path = read_string(l_path);
 
     strcpy(request->path, s_path);
     request->state = VERSION;
@@ -55,7 +56,7 @@ void parse_version(String* l_version, Request *request){
         return;
     }
 
-    char* s_version = read_line(l_version);
+    char* s_version = read_string(l_version);
 
     strcpy(request->version, s_version);
 
@@ -65,7 +66,7 @@ void parse_version(String* l_version, Request *request){
 
 
 void parse_message(String *message, Request *request){
-    String *words = get_words(message);
+    String *words = split_words(message);
     String *current = words;
 
     request->state = METHOD;
@@ -89,7 +90,7 @@ void parse_message(String *message, Request *request){
         current = current->next;
     }
 
-    free_lines(words);
+    free_strings(words);
 }
 
 void parse_headers(String *line, Request *request){
@@ -97,18 +98,18 @@ void parse_headers(String *line, Request *request){
     struct Header *current = header;
 
     while (line != NULL && line->len > 0){
-        String *split = split_line(line, ':');
+        String *split = split_first_char(line, ':');
 
         if (split == NULL) {
-            char* err = read_line(line);
+            char* err = read_string(line);
             fprintf(stderr, "Unable to split \"%s\"\n", err);
             free(err);
 
             return;
         }
 
-        char* key = read_line(split);
-        char* value = split->next == NULL ? NULL : read_line(split->next);
+        char* key = read_string(split);
+        char* value = split->next == NULL ? NULL : read_string(split->next);
 
         strcpy(current->key, key);
         strcpy(current->value, value);
@@ -129,18 +130,54 @@ void parse_headers(String *line, Request *request){
     request->header = header;
 }
 
+void parse_headers_hash(String *line){
+    //struct HashTableEntry table[MAX_HEADER_ARRAY_LENGHT] = {};
+
+    while (line != NULL && line->len > 0){
+        String *split = split_first_char(line, ':');
+
+        if (split == NULL) {
+            char* err = read_string(line);
+            fprintf(stderr, "Unable to split \"%s\"\n", err);
+            free(err);
+
+            return;
+        }
+
+        char* key = read_string(split);
+        char* value = split->next == NULL ? NULL : read_string(split->next);
+
+        // strcpy(current->key, key);
+        // strcpy(current->value, value);
+
+
+        free(key);
+        if (value != NULL) free(value);
+
+        line = line->next;
+
+        if (line->len > 0){
+            // struct Header *new_header = calloc(1, sizeof(struct Header));
+            // current->next = new_header;
+            // current = new_header;
+        }
+    }
+}
+
 void parse_body(){
 
 }
 
 
-void parse_http_request(char* message, int len){
-    String *line = get_lines(message, len);
+Request* parse_http_request(char* message, int len){
+    String *line = split_lines(message, len);
 
     Request *request = calloc(1, sizeof(Request));
 
     parse_message(line, request);
-    parse_headers(line->next, request);
+    //parse_headers(line->next, request);
 
-    free_lines(line);
+    free_strings(line);
+
+    return request;
 }

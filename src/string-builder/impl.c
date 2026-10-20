@@ -1,3 +1,5 @@
+#include <stdlib.h>
+
 #include "header.h"
 
 String* split_lines(char* message, size_t len){
@@ -81,6 +83,19 @@ String* split_first_char(String *string, char splitter){
     }
 
     return split;
+}
+
+char* read_string(String *line){
+    
+    char* ret = malloc((line->len + 1) * sizeof(char));
+
+    for(size_t i = 0; i < line->len; i++){
+        ret[i] = line->p_line[i];
+    }
+
+    ret[line->len] = '\0';
+
+    return ret;
 }
 
 void free_strings(String *string){

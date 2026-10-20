@@ -5,12 +5,14 @@
 #include <stdio.h>
 #include <string.h>
 
+uint32_t seed;
+
 typedef struct {
-    uint32_t key;
+    char* key;
     size_t key_len;
     char* value;
 } HashTableEntry;
 
-uint32_t hash(const uint8_t*, size_t, uint32_t);
+uint32_t hash(const uint8_t*, size_t);
 
 #endif

@@ -9,8 +9,7 @@ static inline uint32_t scramble(uint32_t k) {
     return k;
 }
 
-
-uint32_t hash(const uint8_t* key, size_t len, uint32_t seed)
+uint32_t hash(const uint8_t* key, size_t len)
 {
 	uint32_t h = seed;
     uint32_t k;
@@ -42,4 +41,10 @@ uint32_t hash(const uint8_t* key, size_t len, uint32_t seed)
 	h *= 0xc2b2ae35;
 	h ^= h >> 16;
 	return h;
+}
+
+uint32_t hash_entry(HashTableEntry entry){
+    uint8_t* key = (uint8_t*)entry.key;
+
+    return hash(key, entry.key_len);
 }
