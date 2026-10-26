@@ -9,6 +9,8 @@
 #define MAX_HEADER_VALUE_LENGTH 512
 #define MAX_HEADER_ARRAY_LENGHT 256
 
+#include "../src/hash-table/header.h"
+
 enum Method {
     GET = 1,
     POST,
@@ -41,7 +43,7 @@ typedef struct {
     enum Method method;
     char path[MAX_PATH_LENGTH];
     char version[MAX_VERSION_LENGTH];
-    struct Header *header;
+    HashTable *header;
 } Request;
 
 typedef struct {
@@ -49,7 +51,7 @@ typedef struct {
     enum Code code;
     char* message;
     char* body;
-    struct Header header;
+    HashTable *header;
 } Response;
 
 Request* parse_http_request(char*, int);

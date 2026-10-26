@@ -1,3 +1,5 @@
+#include <stdlib.h>
+
 #include "header.h"
 
 //As seen in https://en.wikipedia.org/wiki/MurmurHash
@@ -43,8 +45,114 @@ uint32_t hash(const uint8_t* key, size_t len)
 	return h;
 }
 
-uint32_t hash_entry(HashTableEntry entry){
-    uint8_t* key = (uint8_t*)entry.key;
+HashTable* create_hash_table(size_t capacity){
+    HashTable *table = malloc(sizeof(HashTable));
 
-    return hash(key, entry.key_len);
+    if (table == NULL) return NULL;
+
+    table->entries = calloc(capacity, sizeof(Node));
+
+    if (table->entries == NULL) {
+        free(table);
+        return NULL;
+    }
+
+    table->capacity = capacity;
+    table->size = 0;
+
+    return table;
 }
+
+Node* create_node(const char* key, const char* value){
+    size_t key_len = strlen(key);
+    size_t val_len = strlen(value);
+
+    Node *node = malloc(sizeof(Node));
+    if (node == NULL) return NULL;
+
+    node->key = malloc((key_len + 1) * sizeof(char));
+    node->value = malloc((val_len + 1) * sizeof(char));
+
+    if (node->key == NULL || node->value == NULL) {
+        free(node->key);
+        free(node->value);
+        free(node);
+        return NULL;
+    }
+
+    strcpy(node->key, key);
+    strcpy(node->value, value);
+
+    node->occupied = 1;
+    node->next = NULL;
+
+    return node;
+}
+
+int find_node_index(HashTable *table, const char* key){
+    size_t len = strlen(key);
+    uint32_t index = hash((const uint8_t*)key, len) % table->capacity;
+
+    Node *node = table->entries[index];
+
+    while (node != NULL && node->occupied == 1 && strcmp(node->key, key) != 0){
+        index = (index + 1) % table->capacity;
+        node = table->entries[index];
+    }
+
+    return index;
+}
+
+Node* lookup(HashTable *table, const char* key){
+    int index = find_node_index(table, key);
+
+    Node *node = table->entries[index];
+
+    return node;
+}
+
+void insert_hash_table(HashTable *table, const char* key, const char* value){
+
+    // if (table->size >= table->capacity * load_factor){
+    //     resize_hash_table(table, table->capacity * 2);
+    // }
+
+    int index = find_node_index(table, key);
+
+    if (table->entries[index] != NULL){
+        Node *node = table->entries[index];
+
+        while (node != NULL && node->next != NULL){
+            node = node->next;
+            printf("P: %p\n", node);
+        }
+
+        node->next = create_node(key, value);
+    }
+    else {
+        table->entries[index] = create_node(key, value);
+        table->size++;
+    }
+}
+
+// void resize_hash_table(HashTable *table, size_t new_capacity){
+//     if (new_capacity < table->size){
+//         fprintf(stderr, "Cannot resize to smaller capacity");
+//         return;
+//     }
+        
+
+//     HashTable *new_table = create_hash_table(new_capacity);
+
+//     for (size_t i = 0; i < table->capacity; i++){
+//         Node *entry = table->entries[i];
+//         if (entry->occupied == 0) continue;
+
+//         while (entry != NULL){
+
+//         }
+
+//     }
+
+
+// }

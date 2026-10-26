@@ -1,5 +1,5 @@
-#ifndef HEADER_H
-#define HEADER_H
+#ifndef STRING_BUILDER_HEADER_H
+#define STRING_BUILDER_HEADER_H
 
 #include <stdio.h>
 

@@ -1,6 +1,7 @@
 #include <string.h>
 #include <stdlib.h>
 #include <stdio.h>
+#include <stdint.h>
 
 #include <errno.h>
 
@@ -93,9 +94,50 @@ void parse_message(String *message, Request *request){
     free_strings(words);
 }
 
-void parse_headers(String *line, Request *request){
-    struct Header *header = calloc(1, sizeof(struct Header));
-    struct Header *current = header;
+// void parse_headers(String *line, Request *request){
+//     struct Header *header = calloc(1, sizeof(struct Header));
+//     struct Header *current = header;
+
+//     while (line != NULL && line->len > 0){
+//         String *split = split_first_char(line, ':');
+
+//         if (split == NULL) {
+//             char* err = read_string(line);
+//             fprintf(stderr, "Unable to split \"%s\"\n", err);
+//             free(err);
+
+//             return;
+//         }
+
+//         char* key = read_string(split);
+//         char* value = split->next == NULL ? NULL : read_string(split->next);
+
+//         strcpy(current->key, key);
+//         strcpy(current->value, value);
+
+
+//         free(key);
+//         if (value != NULL) free(value);
+
+//         line = line->next;
+
+//         if (line->len > 0){
+//             struct Header *new_header = calloc(1, sizeof(struct Header));
+//             current->next = new_header;
+//             current = new_header;
+//         }
+//     }
+
+//     request->header = header;
+// }
+
+void parse_headers_hash(String *line, Request *request){
+    HashTable *table = create_hash_table(10);
+
+    seed = 5;
+    //SET_SEED(5);
+
+    char* last_key[50];
 
     while (line != NULL && line->len > 0){
         String *split = split_first_char(line, ':');
@@ -109,59 +151,19 @@ void parse_headers(String *line, Request *request){
         }
 
         char* key = read_string(split);
-        char* value = split->next == NULL ? NULL : read_string(split->next);
+        char* value = split->next == NULL ? "NULL" : read_string(split->next);
 
-        strcpy(current->key, key);
-        strcpy(current->value, value);
+        insert_hash_table(table, key, value);
 
-
-        free(key);
-        if (value != NULL) free(value);
-
-        line = line->next;
-
-        if (line->len > 0){
-            struct Header *new_header = calloc(1, sizeof(struct Header));
-            current->next = new_header;
-            current = new_header;
-        }
-    }
-
-    request->header = header;
-}
-
-void parse_headers_hash(String *line){
-    //struct HashTableEntry table[MAX_HEADER_ARRAY_LENGHT] = {};
-
-    while (line != NULL && line->len > 0){
-        String *split = split_first_char(line, ':');
-
-        if (split == NULL) {
-            char* err = read_string(line);
-            fprintf(stderr, "Unable to split \"%s\"\n", err);
-            free(err);
-
-            return;
-        }
-
-        char* key = read_string(split);
-        char* value = split->next == NULL ? NULL : read_string(split->next);
-
-        // strcpy(current->key, key);
-        // strcpy(current->value, value);
-
+        strcpy(last_key, key);
 
         free(key);
         if (value != NULL) free(value);
 
         line = line->next;
-
-        if (line->len > 0){
-            // struct Header *new_header = calloc(1, sizeof(struct Header));
-            // current->next = new_header;
-            // current = new_header;
-        }
     }
+    
+    request->header = table;
 }
 
 void parse_body(){
@@ -175,7 +177,7 @@ Request* parse_http_request(char* message, int len){
     Request *request = calloc(1, sizeof(Request));
 
     parse_message(line, request);
-    //parse_headers(line->next, request);
+    parse_headers_hash(line->next, request);
 
     free_strings(line);
 

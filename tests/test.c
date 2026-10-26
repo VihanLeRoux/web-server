@@ -3,6 +3,7 @@
 #include <assert.h>
 
 #include "http-handler.h"
+#include "../src/hash-table/header.h"
 
 
 void test_parse_http_request(){
@@ -17,6 +18,17 @@ void test_parse_http_request(){
     assert(request->method == POST);
     assert(strcmp(request->path, "/api/users") == 0);
     assert(strcmp(request->version, "HTTP/1.1") == 0);
+
+    HashTable *table = request->header;
+
+    Node* node = lookup(table, "Host");
+    assert(strcmp(node->value, "api.example.com") == 0);
+
+    node = lookup(table, "Content-Type");
+    assert(strcmp(node->value, "application/json") == 0);
+
+    node = lookup(table, "Content-Length");
+    assert(strcmp(node->value, "25") == 0);
 
     printf("✓ All assertions passed\n");
 }
