@@ -15,10 +15,13 @@ void test_parse_http_request(){
 
     Request* request = parse_http_request(message, len);
 
+    //Message
     assert(request->method == POST);
     assert(strcmp(request->path, "/api/users") == 0);
     assert(strcmp(request->version, "HTTP/1.1") == 0);
 
+
+    //Headers
     HashTable *table = request->header;
 
     Node* node = lookup(table, "Host");
@@ -30,6 +33,12 @@ void test_parse_http_request(){
     node = lookup(table, "Content-Length");
     assert(strcmp(node->value, "25") == 0);
 
+
+    //Body
+    assert(strcmp(request->body, "{\"name\":\"John\",\"age\":30}") == 0);
+
+
+    //Success
     printf("✓ All assertions passed\n");
 }
 

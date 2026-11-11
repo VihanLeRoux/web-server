@@ -94,50 +94,11 @@ void parse_message(String *message, Request *request){
     free_strings(words);
 }
 
-// void parse_headers(String *line, Request *request){
-//     struct Header *header = calloc(1, sizeof(struct Header));
-//     struct Header *current = header;
-
-//     while (line != NULL && line->len > 0){
-//         String *split = split_first_char(line, ':');
-
-//         if (split == NULL) {
-//             char* err = read_string(line);
-//             fprintf(stderr, "Unable to split \"%s\"\n", err);
-//             free(err);
-
-//             return;
-//         }
-
-//         char* key = read_string(split);
-//         char* value = split->next == NULL ? NULL : read_string(split->next);
-
-//         strcpy(current->key, key);
-//         strcpy(current->value, value);
-
-
-//         free(key);
-//         if (value != NULL) free(value);
-
-//         line = line->next;
-
-//         if (line->len > 0){
-//             struct Header *new_header = calloc(1, sizeof(struct Header));
-//             current->next = new_header;
-//             current = new_header;
-//         }
-//     }
-
-//     request->header = header;
-// }
-
-void parse_headers_hash(String *line, Request *request){
+String* parse_headers_hash(String *line, Request *request){
     HashTable *table = create_hash_table(10);
 
     seed = 5;
     //SET_SEED(5);
-
-    char* last_key[50];
 
     while (line != NULL && line->len > 0){
         String *split = split_first_char(line, ':');
@@ -147,7 +108,7 @@ void parse_headers_hash(String *line, Request *request){
             fprintf(stderr, "Unable to split \"%s\"\n", err);
             free(err);
 
-            return;
+            return NULL;
         }
 
         char* key = read_string(split);
@@ -155,31 +116,99 @@ void parse_headers_hash(String *line, Request *request){
 
         insert_hash_table(table, key, value);
 
-        strcpy(last_key, key);
-
         free(key);
         if (value != NULL) free(value);
 
         line = line->next;
     }
-    
+
     request->header = table;
+
+    if (line == NULL) return NULL;
+
+    return line->next;
 }
 
-void parse_body(){
+void parse_body(String *line, Request *request){
+    unsigned long body_len = 0;
+    errno = 0;
 
+    Node *node = lookup(request->header, "Content-Length");
+    if (node != NULL){
+        char* endptr = NULL;
+        body_len = strtoul(node->value, &endptr, 10);
+
+        if (errno == ERANGE) {
+            printf("Error: Value out of range (overflow)\n");
+            return;
+        } else if (endptr == node->value) {
+            printf("Error: No valid conversion\n");
+            return;
+        } else if (*endptr != '\0') {
+            printf("Warning: Partial conversion. Stopped at: %s\n", endptr);
+            return;
+        }
+    } else {
+        body_len = MAX_BODY_LENGTH;
+    }
+
+
+
+    request->body = malloc(body_len * sizeof(char));
+    if (request->body == NULL) {
+        printf("Error: Memory allocation failed\n");
+        return;
+    }
+
+    size_t size = 0;
+
+    // char* word = read_string(line);
+    // printf("%s\n", word);
+    // free(word);
+
+
+    while (line != NULL){
+        if (line->len <= 0) {
+            line = line->next;
+            continue;
+        }
+
+        if (line->len + size > body_len)
+        {
+            break;
+        }
+
+
+        memcpy(&request->body[size], line->p_line, line->len);
+        size += line->len;
+
+        line = line->next;
+
+        if (line == NULL || line->len <= 0) continue;
+
+        if (size + 2 >= body_len) break;
+
+        memcpy(&request->body[size], "\r\n", 2);
+        size += 2;
+    }
+
+    request->body[size] = '\0';
 }
 
 
 Request* parse_http_request(char* message, int len){
     String *line = split_lines(message, len);
+    String *head = line->next;
 
     Request *request = calloc(1, sizeof(Request));
 
     parse_message(line, request);
-    parse_headers_hash(line->next, request);
+    String *body = parse_headers_hash(head, request);
+
+    parse_body(body, request);
 
     free_strings(line);
+
 
     return request;
 }

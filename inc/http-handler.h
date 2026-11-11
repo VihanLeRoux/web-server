@@ -7,7 +7,9 @@
 
 #define MAX_HEADER_KEY_LENGTH 256
 #define MAX_HEADER_VALUE_LENGTH 512
-#define MAX_HEADER_ARRAY_LENGHT 256
+
+#define MAX_BODY_LENGTH 4086
+
 
 #include "../src/hash-table/header.h"
 
@@ -43,6 +45,7 @@ typedef struct {
     enum Method method;
     char path[MAX_PATH_LENGTH];
     char version[MAX_VERSION_LENGTH];
+    char* body;
     HashTable *header;
 } Request;
 
