@@ -63,6 +63,29 @@ HashTable* create_hash_table(size_t capacity){
     return table;
 }
 
+void free_node(Node *node){
+    free(node->key);
+    free(node->value);
+    free(node);
+}
+
+void free_hash_table(HashTable *table){
+
+    for (size_t i = 0; i < table->capacity; i++){
+        Node *entry, *next = table->entries[i];
+        if (entry == NULL || entry->occupied == 0)continue;
+
+        while (next != NULL && next->occupied == 1){
+            entry = next;
+            next = entry->next;
+            free_node(entry);
+        }
+    }
+
+    free(table->entries);
+    //free(table);
+}
+
 Node* create_node(const char* key, const char* value){
     size_t key_len = strlen(key);
     size_t val_len = strlen(value);
@@ -74,9 +97,7 @@ Node* create_node(const char* key, const char* value){
     node->value = malloc((val_len + 1) * sizeof(char));
 
     if (node->key == NULL || node->value == NULL) {
-        free(node->key);
-        free(node->value);
-        free(node);
+        free_node(node);
         return NULL;
     }
 
@@ -89,9 +110,18 @@ Node* create_node(const char* key, const char* value){
     return node;
 }
 
+
+
 int find_node_index(HashTable *table, const char* key){
+    if (table == NULL){
+        fprintf(stderr, "The table does not exist");
+        return -1;
+    }
+
     size_t len = strlen(key);
     uint32_t index = hash((const uint8_t*)key, len) % table->capacity;
+
+    
 
     Node *node = table->entries[index];
 
@@ -111,11 +141,39 @@ Node* lookup(HashTable *table, const char* key){
     return node;
 }
 
-void insert_hash_table(HashTable *table, const char* key, const char* value){
+void resize_hash_table(HashTable **table, size_t new_capacity){
+    HashTable *old_table = *table;
 
-    // if (table->size >= table->capacity * load_factor){
-    //     resize_hash_table(table, table->capacity * 2);
-    // }
+    if (new_capacity < old_table->size){
+        fprintf(stderr, "Cannot resize to smaller capacity");
+        return;
+    }
+
+    HashTable *new_table = create_hash_table(new_capacity);
+
+    for (size_t i = 0; i < old_table->capacity; i++){
+        Node *entry = old_table->entries[i];
+        if (entry == NULL || entry->occupied == 0) continue;
+
+        while (entry != NULL && entry->occupied == 1){
+            insert_hash_table(&new_table, entry->key, entry->value);
+
+            entry = entry->next;
+        }
+    }
+
+    free_hash_table(old_table);
+
+    *table = new_table;
+}
+
+void insert_hash_table(HashTable **table_ref, const char* key, const char* value){
+    
+    HashTable *table = *table_ref;
+
+    if (table->size >= (table)->capacity * load_factor){
+        resize_hash_table(&table, table->capacity * 2);
+    }
 
     int index = find_node_index(table, key);
 
@@ -133,26 +191,7 @@ void insert_hash_table(HashTable *table, const char* key, const char* value){
         table->entries[index] = create_node(key, value);
         table->size++;
     }
+
+    *table_ref = table;
 }
 
-// void resize_hash_table(HashTable *table, size_t new_capacity){
-//     if (new_capacity < table->size){
-//         fprintf(stderr, "Cannot resize to smaller capacity");
-//         return;
-//     }
-        
-
-//     HashTable *new_table = create_hash_table(new_capacity);
-
-//     for (size_t i = 0; i < table->capacity; i++){
-//         Node *entry = table->entries[i];
-//         if (entry->occupied == 0) continue;
-
-//         while (entry != NULL){
-
-//         }
-
-//     }
-
-
-// }

@@ -98,9 +98,9 @@ String* parse_headers_hash(String *line, Request *request){
     HashTable *table = create_hash_table(10);
 
     seed = 5;
-    //SET_SEED(5);
 
     while (line != NULL && line->len > 0){
+
         String *split = split_first_char(line, ':');
 
         if (split == NULL) {
@@ -114,10 +114,11 @@ String* parse_headers_hash(String *line, Request *request){
         char* key = read_string(split);
         char* value = split->next == NULL ? "NULL" : read_string(split->next);
 
-        insert_hash_table(table, key, value);
+        insert_hash_table(&table, key, value);
 
         free(key);
         if (value != NULL) free(value);
+        
 
         line = line->next;
     }

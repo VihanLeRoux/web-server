@@ -8,7 +8,7 @@
 #define SET_SEED(x) (seed = x)
 
 static uint32_t seed;
-static float load_factor;
+static float load_factor = 0.75;
 
 
 typedef struct Node {
@@ -27,7 +27,7 @@ typedef struct {
 uint32_t hash(const uint8_t*, size_t);
 HashTable* create_hash_table(size_t);
 Node* lookup(HashTable*, const char*);
-void insert_hash_table(HashTable*, const char*, const char*);
+void insert_hash_table(HashTable**, const char*, const char*);
 
 
 #endif
