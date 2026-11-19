@@ -130,8 +130,9 @@ String* parse_headers_hash(String *line, Request *request){
     return line->next;
 }
 
-void parse_body(String *line, Request *request){
+unsigned long get_body_length(Request *request){
     unsigned long body_len = 0;
+
     errno = 0;
 
     Node *node = lookup(request->header, "Content-Length");
@@ -141,20 +142,26 @@ void parse_body(String *line, Request *request){
 
         if (errno == ERANGE) {
             printf("Error: Value out of range (overflow)\n");
-            return;
+            return 0;
         } else if (endptr == node->value) {
             printf("Error: No valid conversion\n");
-            return;
+            return 0;
         } else if (*endptr != '\0') {
             printf("Warning: Partial conversion. Stopped at: %s\n", endptr);
-            return;
+            return 0;
         }
     } else {
         body_len = MAX_BODY_LENGTH;
     }
 
+    return body_len;
+}
 
+void parse_body(String *line, Request *request){
+    unsigned long body_len = get_body_length(request);
 
+    if (body_len == 0) return;
+    
     request->body = malloc(body_len * sizeof(char));
     if (request->body == NULL) {
         printf("Error: Memory allocation failed\n");
@@ -163,32 +170,21 @@ void parse_body(String *line, Request *request){
 
     size_t size = 0;
 
-    // char* word = read_string(line);
-    // printf("%s\n", word);
-    // free(word);
-
-
     while (line != NULL){
         if (line->len <= 0) {
             line = line->next;
             continue;
         }
 
-        if (line->len + size > body_len)
-        {
-            break;
-        }
-
+        if (line->len + size > body_len) break;
 
         memcpy(&request->body[size], line->p_line, line->len);
         size += line->len;
 
         line = line->next;
 
-        if (line == NULL || line->len <= 0) continue;
-
         if (size + 2 >= body_len) break;
-
+        
         memcpy(&request->body[size], "\r\n", 2);
         size += 2;
     }
@@ -210,6 +206,15 @@ Request* parse_http_request(char* message, int len){
 
     free_strings(line);
 
-
     return request;
+}
+
+void close_request(Request* request){
+    //free(request->path);
+    //free(request->version);
+    
+    free(request->body);
+    free_hash_table(request->header);
+
+    free(request);
 }

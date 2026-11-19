@@ -26,8 +26,10 @@ typedef struct {
 
 uint32_t hash(const uint8_t*, size_t);
 HashTable* create_hash_table(size_t);
+void free_hash_table(HashTable*);
 Node* lookup(HashTable*, const char*);
 void insert_hash_table(HashTable**, const char*, const char*);
+
 
 
 #endif

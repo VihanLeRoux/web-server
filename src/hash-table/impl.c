@@ -70,10 +70,18 @@ void free_node(Node *node){
 }
 
 void free_hash_table(HashTable *table){
+    if (table == NULL){
+        fprintf(stderr, "The table does not exist");
+        return;
+    }
+
+    
 
     for (size_t i = 0; i < table->capacity; i++){
+
         Node *entry, *next = table->entries[i];
-        if (entry == NULL || entry->occupied == 0)continue;
+
+        if (next == NULL || next->occupied == 0)continue;
 
         while (next != NULL && next->occupied == 1){
             entry = next;
@@ -82,8 +90,10 @@ void free_hash_table(HashTable *table){
         }
     }
 
+    
+
     free(table->entries);
-    //free(table);
+    free(table);
 }
 
 Node* create_node(const char* key, const char* value){

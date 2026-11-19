@@ -10,11 +10,12 @@
 
 #define MAX_BODY_LENGTH 4086
 
+#define METHOD_COUNT 4
 
 #include "../src/hash-table/header.h"
 
 enum Method {
-    GET = 1,
+    GET = 0,
     POST,
     PUT,
     DELETE
@@ -32,12 +33,6 @@ enum ParseState {
     METHOD,
     PATH,
     VERSION,
-};
-
-struct Header {
-    char key[MAX_HEADER_KEY_LENGTH];
-    char value[MAX_HEADER_VALUE_LENGTH];
-    struct Header *next;
 };
 
 typedef struct {
@@ -58,5 +53,6 @@ typedef struct {
 } Response;
 
 Request* parse_http_request(char*, int);
+void close_request(Request*);
 
 #endif
